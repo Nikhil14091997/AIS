@@ -45,21 +45,21 @@ def date_format(str1):
     # December -> dec
     if (len(l1[0]) > 3):
         l1[0] = l1[0][:3]
-    dict1 = {'jan' : 1,
-        'feb':2,
-        'mar':3,
-        'apr':4,
-        'may':5,
-        'jun':6,
-        'jul':7,
-        'aug':8,
-        'sep':9,
-        'oct':10,
-        'nov':11,
-        'dec':12
+    dict1 = {'jan' : '01',
+        'feb':'02',
+        'mar':'03',
+        'apr':'04',
+        'may':'05',
+        'jun':'06',
+        'jul':'07',
+        'aug':'08',
+        'sep':'09',
+        'oct':'10',
+        'nov':'11',
+        'dec':'12'
     }
     a = str(dict1[l1[0]])
-    return str(l1[1]+'-'+ a +'-'+str(l1[2]))
+    return str(l1[1].zfill(2)+'-'+ a +'-'+str(l1[2]))
 
 '''
 This is a utilty function for checking keywords in title.
