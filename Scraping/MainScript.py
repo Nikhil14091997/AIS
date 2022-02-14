@@ -12,6 +12,7 @@ from ais_utilities import keywords
 from ais_utilities import getPage
 from pacific import getContent, pacific
 from IntegrationV2 import scrapeEuropa, scrape_mddionline, scrapeFDA, scrapeMedTechDive, scrapeRaps
+from IntegrationV2 import chinaMedDevice
 
 dataHuggingFace = []
 
@@ -36,7 +37,8 @@ url = ['https://www.ema.europa.eu',
        'https://www.fdanews.com/articles/topic/106?page=5',
        'https://www.medtechdive.com/topic/medical-devices/',
        'https://www.raps.org/news-and-articles/news-articles',
-       'https://www.pacificbridgemedical.com/resource-center/?cat_resource_type%5B%5D=17&cat_resource_market=0&_type='
+       'https://www.pacificbridgemedical.com/resource-center/?cat_resource_type%5B%5D=17&cat_resource_market=0&_type=',
+       "https://chinameddevice.com/cmd-blogs"
        ]
 #Calling 'https://www.pacificbridgemedical.com/resource-center/?cat_resource_type%5B%5D=17&cat_resource_market=0&_type=' website's function
 all_news = pacific(url[5])
@@ -87,19 +89,9 @@ dataHuggingFace.append(all_news)
 
 time.sleep(2)
 
-
-
-# getting today's date
-today = date.today()
-# dd/mm/YY
-d1 = today.strftime("%d-%m-%Y")
-
-for all_news in dataHuggingFace:
-    for news in all_news:
-        if len(news) > 0:
-            print(news['title'])
-            print(news['identifier'])
-            print(news['date'], "\n\n")
-            print("-"*100)
-    print("*"*100)
-            
+# Calling 'https://chinameddevice.com/cmd-blogs' website's function
+all_news = chinaMedDevice(url[6])
+if len(all_news) > 1:
+    print("Data for:-", url[6], " populated successfully !!")
+dataHuggingFace.append(all_news)
+print("Data Population in list of dictionaries")
