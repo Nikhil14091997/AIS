@@ -5,11 +5,12 @@ import csv
 import time
 import urllib3
 from datetime import date
-from datetime import date
+import datetime
 from ais_utilities import date_format
 from ais_utilities import check_keywords_in_title
 from ais_utilities import keywords
 from ais_utilities import getPage
+import html2text
 
 # https://www.mddionline.com/regulatory-quality/regulations
 def scrape_mddionline(url):
@@ -156,10 +157,16 @@ def scrapeMedTechDive(url):
         for row in table.findAll('div', attrs = {'class':'medium-8 columns'}):
             news = {}
             news['identifier'] = url
+            if row.find("div", attrs = {"class":"label label--loud"}):
+                print("Loud Label Found... - ", url)
+                continue
             news['title'] = row.h3.text.lstrip().rstrip()
             news['url']=row.a['href']
             dummy = row.findAll('span', attrs ={'class':'secondary-label'})[-1]
             dummy = dummy.text.lstrip().rstrip().replace(",", "")
+            if 'Updated' in dummy or 'ago' in dummy:
+                today = datetime.date.today()
+                dummy = today.strftime("%B %d, %Y")
             date = dummy.split(" ")[-3:]
             date = ' '.join(date)
             news['date'] = date_format(date)
@@ -239,4 +246,54 @@ def scrapeRaps(url):
     return all_news
     
 
- 
+ # https://chinameddevice.com/cmd-blogs
+def chinaMedDevice(url):
+    all_news = []
+    cookie_jar=requests.cookies.RequestsCookieJar()
+    session=requests.Session()
+    header = {'Accept-Encoding': 'gzip, deflate', 'Accept': '/', 'Connection': 'keep-alive',
+     "User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64; rv:32.0) Gecko/20100101 Firefox/32.0"
+     }
+    try:
+        print("Utility function for https://chinameddevice.com/ called !")
+        soup = getPage(url)
+        articles = soup.find(attrs = {"class":
+                                    ["elementor-posts-container", 
+                                    "elementor-posts", 
+                                    "elementor-posts--skin-classic",
+                                    "elementor-grid elementor-has-item-ratio"]})
+        table = articles.find_all("article")
+        for article in table:
+            title = article.h3.text.lstrip().rstrip()
+            url_content = article.a['href']
+            date1 = article.find("span", {"class":"elementor-post-date"}).text.lstrip().rstrip()
+            ret = check_keywords_in_title(title.lower(), keywords)
+            print(title, "- Keywords matched are:- ", ret)
+            if ret:
+                news = {}
+                match = ""
+                match = " | ".join(word for word in ret)
+                print(match)
+                news['identifier'] = 'https://chinameddevice.com'
+                news['title'] = title
+                news['url'] = url_content
+                news['date'] = date_format(date1)
+                news['keywords'] = match
+                bs_inner = getPage(news['url'])
+                content = ''
+                data = bs_inner.select("div.elementor-element.elementor-element-3042338.elementor-widget.elementor-widget-theme-post-content")
+                h = html2text.HTML2Text()
+                h.body_width = 0
+                h.ignore_links = True
+                h.ignore_images = True
+                for d in data:
+                    content = content + d.text
+                news['content'] = content
+                all_news.append(news)
+            else:
+                print("\t No Key Match, news content should not be populated !")
+    except:
+        print("Exception with:- ", url[5])
+
+    return all_news
+            
